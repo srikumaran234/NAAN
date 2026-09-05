@@ -1,10 +1,7 @@
-# NAAN
-
 # NAAN — Network Anomaly Assessment for Nodes
 
 **Razorpay AI Buildathon 2026 — AI Risk Manager track**
-
-
+Srikumaran S
 
 NAAN detects recipient accounts showing mule-account-like incoming-transaction
 patterns in digital payments. It combines unsupervised clustering to surface
@@ -50,37 +47,30 @@ Feature engineering (per nameDest / recipient)
 | Stage | Result |
 |---|---|
 | DBSCAN (eps=0.30) | Best silhouette (0.475); noise cluster shows 2.06% fraud vs 0.82% baseline (~2.5x enrichment) |
-| Account-level XGBoost | ROC-AUC 0.556 — negative result, reported honestly (see docs/project_report.md §4a) |
+| Account-level XGBoost | ROC-AUC 0.556 — negative result, reported honestly |
 | Transaction-level XGBoost | ROC-AUC 0.939, recall 0.83 @ default threshold |
 | Dual-signal agent | Surfaces disagreement between DBSCAN and classifier instead of averaging/hiding it |
-
-Full methodology, hypothesis testing, sensitivity analysis, and honest
-limitations are in [`docs/project_report.md`](docs/project_report.md).
 
 ## Repo structure
 
 ```
-naan-mule-detection/
+NAAN/
 ├── README.md
-├── requirements.txt
-├── notebooks/
-│   ├── 01_ds_pipeline_clustering.ipynb   # cleaning, features, EDA, PCA, DBSCAN/K-Means/Agglomerative
-│   ├── 02_xgboost_classifiers.ipynb      # account-level + transaction-level classifiers
-│   └── 03_llm_agent.ipynb                # single-signal → dual-signal Groq agent
-└── docs/
-    └── project_report.md                 # full write-up: methodology, findings, limitations
+├── DS-Phase.ipynb          # cleaning, features, EDA, PCA, DBSCAN/K-Means/Agglomerative
+├── XGBoost.ipynb           # account-level + transaction-level classifiers
+└── LLM_Connect.ipynb       # single-signal → dual-signal Groq agent
 ```
 
 ## Setup
 
 ```bash
-pip install -r requirements.txt
+pip install pandas numpy scikit-learn scipy matplotlib seaborn xgboost joblib kagglehub groq
 ```
 
 Notebooks were developed in **Google Colab with a T4 GPU** using cuDF/cuML
 (RAPIDS) for feature engineering and clustering, with a validated CPU/pandas
 fallback path. cuML/cuDF are not preinstalled on a fresh Colab runtime and
-must be reinstalled per session (see notebook 01, cell 2).
+must be reinstalled per session (see DS-Phase.ipynb, cell 2).
 
 Dataset: [PaySim](https://www.kaggle.com/datasets/ealaxi/paysim1) (Kaggle,
 `ealaxi/paysim1`), loaded via `kagglehub.dataset_download("ealaxi/paysim1")`.
@@ -88,8 +78,8 @@ Dataset: [PaySim](https://www.kaggle.com/datasets/ealaxi/paysim1) (Kaggle,
 Trained artifacts (`fitted_scaler.pkl`, `fitted_pca.pkl`, `core_points.npy`,
 `fraud_classifier_xgb.pkl`, `txn_level_classifier_xgb.pkl`) are expected under
 a `PROJECT_DIR` (default: `/content/drive/MyDrive/fraud_detection_project/`)
-so scoring new accounts doesn't require retraining see notebook 03 for the
-plug-and-play scoring flow.
+so scoring new accounts doesn't require retraining — see LLM_Connect.ipynb for
+the plug-and-play scoring flow.
 
 `GROQ_API_KEY` must be set as an environment variable to run the agent
 notebook.
@@ -100,5 +90,7 @@ The agent layer never approves, blocks, or moves money. It only produces a
 structured risk assessment for a human reviewer, creating an auditable trail
 — NAAN is a triage/priority signal, not a stand-alone automated
 decision-maker.
+
+## Pitch video
 
 [link here]
